@@ -11,6 +11,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src/ ./src/
+# Seed dataset, used only by the playground UI.
+COPY pkg/dataset/ ./pkg/dataset/
 
 # The judge polls /v1/healthz every 60s and three consecutive failures end the
 # run, so the container declares its own liveness on the same endpoint.

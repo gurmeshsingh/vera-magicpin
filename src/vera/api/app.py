@@ -13,13 +13,15 @@ restraint is a policy here rather than an omission.
 
 from __future__ import annotations
 
+import json
+import pathlib
 import time
 import uuid
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from ..compose.engine import compose as compose_message
 from ..compose.facts import FactLedger
@@ -33,6 +35,7 @@ from ..conversation.state import (
     violates_intent_rule,
 )
 from . import schemas as S
+from .playground import PLAYGROUND_HTML
 
 START = time.time()
 
@@ -250,6 +253,60 @@ async def push_context(body: S.ContextPush) -> dict:
         ack_id=f"ack_{body.context_id}_v{body.version}",
         stored_at=_now_iso(),
     ).model_dump()
+
+
+# --------------------------------------------------------------------------
+# Playground -- a browser UI over the same five endpoints.
+#
+# Not part of the contract. The judge never calls these; they exist so a human
+# can drive the bot by hand and see exactly what it would say.
+# --------------------------------------------------------------------------
+
+_DATASET = pathlib.Path(__file__).resolve().parents[3] / "pkg" / "dataset"
+
+
+@app.get("/", response_class=HTMLResponse)
+@app.get("/playground", response_class=HTMLResponse)
+async def playground() -> HTMLResponse:
+    return HTMLResponse(PLAYGROUND_HTML)
+
+
+@app.post("/v1/_demo")
+async def load_demo() -> dict:
+    """Push the ten seed merchants and their categories through /v1/context.
+
+    Deliberately routed through the real store rather than a side channel, so
+    the playground exercises the same path the judge does -- including the
+    idempotency rule and the version diffing.
+    """
+    loaded: list[dict[str, str]] = []
+    try:
+        cats = {p.stem: json.loads(p.read_text())
+                for p in (_DATASET / "categories").glob("*.json")}
+        seeds = json.loads((_DATASET / "merchants_seed.json").read_text())
+        merchants = seeds.get("merchants", [])
+    except (OSError, json.JSONDecodeError) as exc:
+        return {"merchants": [], "error": f"demo data unavailable: {exc}"}
+
+    for slug, payload in cats.items():
+        store.put("category", slug, 1, payload)
+
+    for m in merchants:
+        mid = m.get("merchant_id")
+        slug = m.get("category_slug")
+        if not mid or slug not in cats:
+            continue
+        store.put("merchant", mid, 1, m)
+        tid = f"trg_{mid}"
+        store.put("trigger", tid, 1, {
+            "id": tid, "kind": "perf_dip", "scope": "merchant",
+            "merchant_id": mid, "urgency": 2, "payload": {},
+        })
+        loaded.append({"id": mid,
+                       "name": (m.get("identity") or {}).get("name", mid),
+                       "category": slug})
+
+    return {"merchants": loaded, "categories": sorted(cats)}
 
 
 # --------------------------------------------------------------------------
