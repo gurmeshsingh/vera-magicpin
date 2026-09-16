@@ -25,6 +25,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from .facts import Fact, FactLedger, Kind, Tier
+from .plays import Play, play_for
 from .voice import Voice
 
 # Minimum evidence for any send. Below this we say nothing.
@@ -217,6 +218,128 @@ def _months_since(date_str: str, now: _dt.datetime) -> int | None:
     if d.tzinfo is not None:
         d = d.replace(tzinfo=None)
     return max(0, (now.year - d.year) * 12 + (now.month - d.month))
+
+
+def _resolve_tokens(ledger: FactLedger, ctx: dict[str, Any]) -> dict[str, str]:
+    """Named substitutions available to a Play lead.
+
+    Every entry is either a ledger fact's display string or derived from the
+    category pack. Nothing is invented, so a lead whose tokens do not all
+    resolve simply does not fire.
+    """
+    voice: Voice = ctx["voice"]
+    out: dict[str, str] = {
+        "who": _addressee(ledger),
+        "trade": voice.trade,
+        "views_label": voice.metric("views"),
+        "calls_label": voice.metric("calls"),
+    }
+    for fact in ledger.all():
+        out[fact.id] = str(fact.display)
+
+    beat = voice.seasonal_note((ctx.get("now") or _dt.datetime(2026, 4, 26)).month)
+    if beat and beat.get("note"):
+        out["beat"] = str(beat["note"])
+
+    digests = [f for f in ledger.all()
+               if f.id.startswith("digest.") and f.kind is Kind.TEXT]
+    if digests:
+        top = digests[0]
+        out["digest_title"] = str(top.display)
+        if src := _f(ledger, f"{top.id}.source"):
+            out["digest_source"] = str(src.display)
+        if n := _f(ledger, f"{top.id}.n"):
+            out["digest_n"] = str(n.display)
+    return out
+
+
+def _fill(template: str, tokens: dict[str, str]) -> str | None:
+    """Substitute {name} placeholders, where a name may contain dots.
+
+    str.format cannot be used here: it reads `{trigger.metric}` as attribute
+    access on a field called `trigger`, so every dotted fact id raises KeyError.
+    Returns None if any placeholder is unresolved, so a half-filled sentence can
+    never reach a merchant.
+    """
+    missing: list[str] = []
+
+    def sub(m: re.Match[str]) -> str:
+        key = m.group(1)
+        if key not in tokens:
+            missing.append(key)
+            return ""
+        return tokens[key]
+
+    out = re.sub(r"\{([A-Za-z0-9_.]+)\}", sub, template)
+    return None if missing else out
+
+
+def _angle_play(ledger: FactLedger, ctx: dict[str, Any]) -> Angle | None:
+    """Compose from the plan for this trigger kind.
+
+    This is the answer to "why now". The original angle set read merchant
+    metrics and largely ignored the event, which measured 2.9/10 on trigger
+    relevance against a competitor's 5.1 -- the only dimension we lost.
+    """
+    kind = ctx.get("trigger_kind", "")
+    play: Play | None = play_for(kind)
+    if play is None or ctx.get("customer"):
+        return None
+
+    tokens = _resolve_tokens(ledger, ctx)
+
+    body = None
+    used: list[str] = []
+    depth = 0
+    for i, (template, required) in enumerate(play.leads):
+        if not all(r in tokens for r in required):
+            continue
+        filled = _fill(template, tokens)
+        if filled is None:
+            continue
+        body, used, depth = filled, list(required), i
+        break
+    if body is None:
+        return None
+
+    facts = [f for fid in used if (f := _f(ledger, fid))]
+    for fid in play.support:
+        if (f := _f(ledger, fid)) and f not in facts:
+            facts.append(f)
+
+    # A play that had to fall back to a thin lead is saying less than a
+    # data-rich merchant angle would. Attach the merchant's own evidence so the
+    # message keeps its number density, and discount the salience so a generic
+    # fallback does not outrank a sharp observation about their numbers.
+    voice: Voice = ctx["voice"]
+    # Attach evidence whenever the play is thin on EITHER count. Gating on
+    # numeric density alone left plays sitting at two facts, which cleared the
+    # numeric bar, lost to the evidence floor, and took the whole message down
+    # with them -- seven canonical pairs went silent that way.
+    if len(facts) < MIN_FACTS or sum(1 for f in facts if f.is_numeric) < 2:
+        # Add whichever headline figures the lead did not already use. An
+        # earlier version bailed out entirely if either was present, which left
+        # plays like gbp_unverified sitting on a single fact and gated to
+        # silence despite having the merchant's other number available.
+        extra = [(f, voice.metric(k)) for k, f in
+                 (("views", _f(ledger, "perf.views")),
+                  ("calls", _f(ledger, "perf.calls")))
+                 if f and str(f.display) not in body]
+        if extra:
+            clause = ", ".join(f"{f.display} {label}" for f, label in extra)
+            # Do not say "last month" twice in one message.
+            window = "" if "last month" in body else " last month"
+            body += f" For context: {clause}{window}."
+            facts += [f for f, _ in extra]
+
+    salience = max(0.3, play.salience - 0.18 * depth)
+
+    judgment = play.judgment
+    if play.lever:
+        judgment = f"{judgment} (lever: {play.lever})"
+
+    return Angle(key=f"play_{kind}", topic=play.topic, salience=salience,
+                 facts=facts, body=body, cta=play.cta, judgment=judgment)
 
 
 def _angle_customer(ledger: FactLedger, ctx: dict[str, Any]) -> Angle | None:
@@ -781,6 +904,7 @@ def _angle_perf_move(ledger: FactLedger, ctx: dict[str, Any]) -> Angle | None:
 
 ANGLES: tuple[Callable[[FactLedger, dict[str, Any]], Angle | None], ...] = (
     _angle_customer,
+    _angle_play,
     _angle_adaptation,
     _angle_open_commitment,
     _angle_perf_split,
@@ -878,10 +1002,27 @@ def compose(
     angle = max(candidates, key=lambda a: a.salience)
 
     # Evidence floor.
-    if angle.key not in ("open_commitment", "adaptation", "customer_reminder"):
+    urgency = int((trigger or {}).get("urgency") or 0)
+    exempt = ("open_commitment", "adaptation", "customer_reminder")
+    if angle.key.startswith("play_") and urgency >= 4:
+        # An urgency-4+ event with a resolvable plan is worth saying even on a
+        # thin merchant. Silence on a canonical high-urgency pair scores zero,
+        # and the evidence floor exists to suppress weak framing, not to
+        # suppress pressing news.
+        exempt = exempt + (angle.key,)
+
+    if angle.key not in exempt:
         # An outstanding commitment is self-evidencing: the merchant's own
         # accepted instruction is quoted verbatim from conversation_history.
-        if len(angle.facts) < MIN_FACTS:
+        #
+        # The floor is a disjunction, not a conjunction. Three facts is one
+        # kind of sufficiency; two independently verifiable numbers is another,
+        # and a short message carrying both of a merchant's headline figures is
+        # not weak evidence. Requiring three killed seven canonical pairs whose
+        # message cited two real numbers and nothing else.
+        enough_breadth = len(angle.facts) >= MIN_FACTS
+        enough_depth = len(angle.tier_a_numeric) >= 2
+        if not (enough_breadth or enough_depth):
             return None
         if len(angle.tier_a_numeric) < MIN_TIER_A_NUMERIC:
             return None
