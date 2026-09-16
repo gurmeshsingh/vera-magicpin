@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vera in Plain English</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+
+<style>
+:root{
+  --paper:#F7F8F5;
+  --surface:#FFFFFF;
+  --surface-2:#EDF1EC;
+  --ink:#131C18;
+  --ink-soft:#3F4D46;
+  --ink-faint:#6E7D75;
+  --rule:#D6DFD7;
+  --rule-soft:#E5EBE4;
+  --jade:#0E6B4F;
+  --jade-soft:#E3F0E9;
+  --amber:#8A5A0B;
+  --amber-soft:#F7EFDD;
+  --clay:#8F3324;
+  --clay-soft:#F8E7E3;
+  --f-display:"Newsreader",Georgia,"Times New Roman",serif;
+  --f-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1613;
+    --surface:#17211D;
+    --surface-2:#1D2924;
+    --ink:#E9EFEA;
+    --ink-soft:#B6C4BC;
+    --ink-faint:#83958B;
+    --rule:#2B3933;
+    --rule-soft:#232F2A;
+    --jade:#61C9A0;
+    --jade-soft:#18332B;
+    --amber:#DAA543;
+    --amber-soft:#2F2719;
+    --clay:#E28471;
+    --clay-soft:#301E1A;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1613;
+  --surface:#17211D;
+  --surface-2:#1D2924;
+  --ink:#E9EFEA;
+  --ink-soft:#B6C4BC;
+  --ink-faint:#83958B;
+  --rule:#2B3933;
+  --rule-soft:#232F2A;
+  --jade:#61C9A0;
+  --jade-soft:#18332B;
+  --amber:#DAA543;
+  --amber-soft:#2F2719;
+  --clay:#E28471;
+  --clay-soft:#301E1A;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--f-body);
+  font-size:18px;
+  line-height:1.68;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:760px;margin:0 auto;padding:0 26px 120px}
+@media (max-width:640px){.wrap{padding:0 20px 80px}body{font-size:17px}}
+
+header.top{padding:64px 0 0}
+.kicker{
+  font-family:var(--f-body);
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--jade);
+  margin:0 0 18px;
+}
+h1{
+  font-family:var(--f-display);
+  font-size:clamp(38px,6.2vw,58px);
+  line-height:1.04;
+  font-weight:500;
+  letter-spacing:-.02em;
+  margin:0 0 20px;
+  text-wrap:balance;
+}
+.dek{
+  font-family:var(--f-display);
+  font-size:22px;
+  line-height:1.48;
+  color:var(--ink-soft);
+  font-weight:400;
+  margin:0 0 10px;
+}
+.byline{
+  font-size:13.5px;
+  color:var(--ink-faint);
+  border-top:1px solid var(--rule);
+  padding-top:16px;
+  margin-top:34px;
+}
+.byline a{color:var(--jade)}
+
+section{margin:56px 0 0}
+h2{
+  font-family:var(--f-display);
+  font-size:30px;
+  font-weight:500;
+  line-height:1.2;
+  letter-spacing:-.012em;
+  margin:0 0 4px;
+  text-wrap:balance;
+}
+.beat{
+  font-family:var(--f-body);
+  font-size:11.5px;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--jade);
+  margin:0 0 10px;
+}
+h3{
+  font-family:var(--f-display);
+  font-size:21px;
+  font-weight:600;
+  margin:32px 0 6px;
+  letter-spacing:-.008em;
+}
+p{margin:0 0 17px}
+ul{padding-left:0;list-style:none;margin:0 0 17px}
+ul li{
+  position:relative;
+  padding-left:20px;
+  margin-bottom:11px;
+}
+ul li::before{
+  content:"";
+  position:absolute;
+  left:2px;
+  top:.68em;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--jade);
+}
+strong{font-weight:600}
+em{font-style:italic}
+a{color:var(--jade)}
+
+.lead-in{
+  font-size:20px;
+  color:var(--ink-soft);
+  font-family:var(--f-display);
+  line-height:1.5;
+}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--rule);
+  border-radius:8px;
+  padding:22px 24px;
+  margin:24px 0;
+}
+.card h4{
+  font-family:var(--f-body);
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--jade);
+  margin:0 0 10px;
+}
+.card p:last-child{margin:0}
+
+.pull{
+  border-left:3px solid var(--jade);
+  padding:4px 0 4px 22px;
+  margin:28px 0;
+  font-family:var(--f-display);
+  font-size:21px;
+  line-height:1.45;
+  color:var(--ink);
+}
+
+.flag{
+  background:var(--amber-soft);
+  border-radius:8px;
+  padding:20px 24px;
+  margin:24px 0;
+}
+.flag.bad{background:var(--clay-soft)}
+.flag h4{
+  font-family:var(--f-body);
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--amber);
+  margin:0 0 10px;
+}
+.flag.bad h4{color:var(--clay)}
+.flag p:last-child{margin:0}
+
+/* the five steps */
+.steps{
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+  background:var(--rule);
+  border:1px solid var(--rule);
+  border-radius:8px;
+  overflow:hidden;
+  margin:26px 0;
+}
+.step{
+  background:var(--surface);
+  padding:20px 24px;
+  display:grid;
+  grid-template-columns:44px 1fr;
+  gap:18px;
+  align-items:start;
+}
+.step-n{
+  font-family:var(--f-display);
+  font-size:30px;
+  font-weight:500;
+  line-height:1;
+  color:var(--jade);
+  padding-top:2px;
+}
+.step h4{
+  font-family:var(--f-display);
+  font-size:20px;
+  font-weight:600;
+  margin:0 0 5px;
+}
+.step p{margin:0;font-size:16.5px;line-height:1.58;color:var(--ink-soft)}
+@media (max-width:560px){
+  .step{grid-template-columns:1fr;gap:6px}
+  .step-n{font-size:22px}
+}
+
+/* stats */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:1px;
+  background:var(--rule);
+  border:1px solid var(--rule);
+  border-radius:8px;
+  overflow:hidden;
+  margin:26px 0;
+}
+.stat{background:var(--surface);padding:18px}
+.stat b{
+  display:block;
+  font-family:var(--f-display);
+  font-size:32px;
+  font-weight:500;
+  line-height:1;
+  color:var(--clay);
+  font-variant-numeric:tabular-nums;
+}
+.stat span{display:block;font-size:13.5px;color:var(--ink-faint);margin-top:7px;line-height:1.4}
+
+/* message compare */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:26px 0}
+@media (max-width:640px){.compare{grid-template-columns:1fr}}
+.msg{
+  background:var(--surface);
+  border:1px solid var(--rule);
+  border-radius:8px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.msg-head{
+  padding:10px 16px;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  border-bottom:1px solid var(--rule);
+}
+.msg.good .msg-head{background:var(--jade-soft);color:var(--jade)}
+.msg.bad .msg-head{background:var(--clay-soft);color:var(--clay)}
+.msg-body{padding:16px;font-size:16px;line-height:1.55;flex:1}
+.msg-why{
+  padding:13px 16px;
+  border-top:1px dashed var(--rule);
+  font-size:14px;
+  color:var(--ink-faint);
+  line-height:1.5;
+}
+
+/* glossary */
+dl{margin:24px 0}
+dt{
+  font-family:var(--f-display);
+  font-size:19px;
+  font-weight:600;
+  margin:22px 0 3px;
+}
+dd{margin:0;color:var(--ink-soft)}
+dd .said{
+  display:block;
+  font-size:14.5px;
+  color:var(--ink-faint);
+  margin-top:5px;
+  font-style:italic;
+}
+
+footer.end{
+  border-top:1px solid var(--rule);
+  margin-top:64px;
+  padding-top:22px;
+  font-size:14.5px;
+  color:var(--ink-faint);
+}
+:focus-visible{outline:2px solid var(--jade);outline-offset:3px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+<header class="top">
+  <p class="kicker">The product view · no code required</p>
+  <h1>Vera, in plain English</h1>
+  <p class="dek">What we are building for the magicpin AI Challenge, why it is hard, and the handful of product decisions that decide whether it wins.</p>
+  <p class="byline">Companion to the technical playbook. Everything here is the same system, described without the engineering. Read this one before the interview.</p>
+</header>
+
+<section>
+  <p class="beat">01 — The one-minute version</p>
+  <h2>What this actually is</h2>
+  <p class="lead-in">magicpin is a local-commerce platform with about 100,000 merchant partners across Indian cities — restaurants, salons, gyms, dentists, pharmacies.</p>
+  <p><strong>Vera</strong> is their WhatsApp assistant for those merchants. It messages 6,000–10,000 business owners a day: nudging them to fix their Google listing, suggesting offers, flagging that their calls dropped last week, answering their customers' questions for them.</p>
+  <p>The challenge is to rebuild the part of Vera that decides <em>what to say and when</em> — and beat the version running in production today. magicpin runs our system live for about 40 minutes, plays the role of the merchant, and has an AI score every message it sends.</p>
+  <p>There is no resume and no interview round. The system you submit <em>is</em> the application.</p>
+</section>
+
+<section>
+  <p class="beat">02 — The real job</p>
+  <h2>It is a judgment problem wearing a writing problem's clothes</h2>
+  <p>It is tempting to read this as "write good marketing copy." It isn't. Copy is the last step, and the easiest one.</p>
+  <p>The actual job, every five minutes, is a sequence of product decisions:</p>
+  <ul>
+    <li><strong>Which merchant is worth interrupting right now?</strong> There are fifty of them and most have nothing going on.</li>
+    <li><strong>What is the honest reason to message them today?</strong> Not "we haven't talked in a while" — a real, checkable reason.</li>
+    <li><strong>Is that reason strong enough to justify a WhatsApp notification to a busy business owner mid-shift?</strong> Usually it is not.</li>
+    <li><strong>If it is — what single thing do we want them to do,</strong> and how do we make that the easiest possible reply?</li>
+    <li><strong>And when they answer, what happens next?</strong> Including when the answer is "no", or abuse, or an automated out-of-office.</li>
+  </ul>
+  <p>The writing is what falls out of those answers. Get the judgment wrong and no amount of polish saves the message.</p>
+</section>
+
+<section>
+  <p class="beat">03 — How it works</p>
+  <h2>Five steps, every five minutes</h2>
+  <p>Strip out the engineering and the system does this, in order, on a loop:</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-n">1</div>
+      <div>
+        <h4>Listen</h4>
+        <p>magicpin feeds us everything it knows: the five business categories, fifty merchants and their numbers, two hundred of their customers. Then it keeps feeding us updates all through the test — new research, changed performance figures, new events.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">2</div>
+      <div>
+        <h4>Notice</h4>
+        <p>Something happens that could justify a message — a festival in four days, this dentist's calls fell 40%, a new research finding landed for pharmacies. magicpin calls these <em>triggers</em>. They are the "why now".</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">3</div>
+      <div>
+        <h4>Decide</h4>
+        <p>We rank every possible message and then mostly throw them away. One message per merchant at most. Nothing we already said this week. Nothing we cannot back up. Very often the right answer is to send nothing at all.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">4</div>
+      <div>
+        <h4>Write</h4>
+        <p>For whatever survives, we compose a short WhatsApp message in the voice that category demands — clinical and peer-to-peer for a dentist, warm and visual for a salon — with real numbers in it and exactly one thing to reply to.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">5</div>
+      <div>
+        <h4>Check, then talk</h4>
+        <p>Before anything goes out, we verify every fact in it traces back to something magicpin actually told us. Then we hold the conversation — the merchant replies, and we decide whether to answer, wait, or politely end it.</p>
+      </div>
+    </div>
+  </div>
+
+  <p>Step 5's check is the one that would not occur to most people, and it matters more than step 4. More on that shortly.</p>
+</section>
+
+<section>
+  <p class="beat">04 — The insight</p>
+  <h2>The data is much emptier than the brief suggests</h2>
+  <p>The challenge brief opens with a beautiful worked example: Dr. Meera's dental clinic in Lajpat Nagar. She has an active offer, a rich history with Vera, flagged problems on her listing, and a trigger carrying a specific research citation — a 2,100-patient trial, a 38% figure, a journal page number. Everything you need to write a great message is handed to you.</p>
+  <p>We ran magicpin's own data generator to see what the other forty-nine merchants look like.</p>
+
+  <div class="stats">
+    <div class="stat"><b>86%</b><span>have no offers at all</span></div>
+    <div class="stat"><b>84%</b><span>have never talked to Vera</span></div>
+    <div class="stat"><b>80%</b><span>have no flagged issues</span></div>
+    <div class="stat"><b>75%</b><span>of triggers carry no actual facts</span></div>
+  </div>
+
+  <p>Dr. Meera is a hand-written showcase record. She is not the job. The job is a merchant we know almost nothing about, with an event that tells us <em>something happened</em> but not <em>what</em>.</p>
+
+  <div class="flag bad">
+    <h4>Why this is the whole ballgame</h4>
+    <p>The single highest-signal thing the AI judge rewards is <strong>specificity</strong> — real numbers, real dates, real citations. And the obvious place to get them, the trigger, is empty three times out of four.</p>
+    <p>So most teams will build something that writes beautifully for Dr. Meera and produces "grow your business today!" for everyone else. They will score well on the demo case and badly on the real distribution.</p>
+  </div>
+
+  <h3>Where we get facts instead</h3>
+  <p>Two sources are always populated, and both are easy to overlook:</p>
+  <ul>
+    <li><strong>The category knowledge pack.</strong> Five hand-written files — one per business type — full of cited research, seasonal patterns, search trends, and benchmark numbers for that industry. Always there, always rich, identical for every team. Almost nobody will mine it properly.</li>
+    <li><strong>The merchant's own performance numbers.</strong> Views, calls, click-through rate, and how those moved this week. Present on every single merchant, even the empty ones.</li>
+  </ul>
+  <p>Put those together and even our thinnest merchant has something true and specific to say to them: <em>how their numbers compare to their peers, and one thing happening in their industry this week.</em> That is a real message. It required no trigger payload at all.</p>
+
+  <div class="pull">The trigger tells us <em>why now</em>. The industry pack and their own numbers tell us <em>why this is worth your time</em>. Most teams will conflate the two and come up empty.</div>
+</section>
+
+<section>
+  <p class="beat">05 — Quality</p>
+  <h2>What separates a great message from an adequate one</h2>
+  <p>The package includes ten example messages with the judge's actual scores. Usefully, they are <em>all</em> good — they score between 44 and 50 out of 50. So the lesson isn't "avoid being bad." It's what the last six points are made of.</p>
+
+  <div class="compare">
+    <div class="msg good">
+      <div class="msg-head">Scored 50 / 50</div>
+      <div class="msg-body">Dr. Meera, JIDA's Oct issue landed. One item relevant to your high-risk adult patients — 2,100-patient trial showed 3-month fluoride recall cuts caries recurrence 38% better than 6-month. Worth a look (2-min abstract). Want me to pull it + draft a patient-ed WhatsApp you can share? — JIDA Oct 2026 p.14</div>
+      <div class="msg-why">Five checkable facts. Speaks to a dentist like a colleague, not a marketer. Cites its source. And the ask costs her nothing — Vera does the work.</div>
+    </div>
+    <div class="msg bad">
+      <div class="msg-head">Scored 44 / 50</div>
+      <div class="msg-body">Hi Lakshmi! Your Google profile is missing a few things that could bring in more customers. It only takes about 5 minutes to fix. Want me to walk you through it?</div>
+      <div class="msg-why">Only one soft number, and "5 min" isn't a fact about <em>her</em>. Generic greeting. True, polite, helpful — and forgettable.</div>
+    </div>
+  </div>
+
+  <h3>The patterns underneath</h3>
+  <ul>
+    <li><strong>Three to five real numbers</strong> beats one. The lowest-scoring example was marked down explicitly for having a single soft anchor.</li>
+    <li><strong>One yes-or-no question</strong> beats a menu. "Reply YES — no commitment" outscores "Reply 1 for Wednesday, 2 for Thursday", which the judge calls borderline.</li>
+    <li><strong>Every fact must be checkable.</strong> One unverifiable detail caps the score even when everything else is perfect.</li>
+    <li><strong>Skip the greeting.</strong> Straight to their name and the fact. "Hi Lakshmi!" actively costs points.</li>
+    <li><strong>Match the industry's register.</strong> Clinical for dentists, visual for salons, timely for restaurants, utility-first for pharmacies. Never promotional where trust is the product.</li>
+  </ul>
+
+  <div class="flag">
+    <h4>The highest-scoring behaviour in the entire package</h4>
+    <p>One message scores a perfect 50 by telling a restaurant owner to <strong>skip</strong> the promotion the system's own trigger had suggested — because Saturday IPL matches drop their covers by 12%.</p>
+    <p>It argued against its own instruction, using data, on the merchant's behalf. That is the difference between an assistant and a mail-merge, and it is exactly what the judge rewards most.</p>
+  </div>
+</section>
+
+<section>
+  <p class="beat">06 — Restraint</p>
+  <h2>Knowing when to send nothing</h2>
+  <p>The system is allowed to send up to twenty messages every five minutes. Sending twenty would be a catastrophe.</p>
+  <p>An unsent message scores zero. A weak one scores badly across five dimensions, drags the average down, and risks a penalty for repetition or spam. The maths is genuinely lopsided: <strong>silence is cheaper than mediocrity.</strong></p>
+  <p>So we set an explicit bar. A message goes out only when we have a defensible reason it is being sent today, plus at least one fact the merchant could check themselves. Below that bar, we send nothing and wait for a better moment.</p>
+  <p>This is also just correct product behaviour. These are real business owners in the middle of a shift. The permission to message them is a budget, not a resource.</p>
+  <div class="flag">
+    <h4>Say this in the interview</h4>
+    <p>Restraint is explicitly rewarded in the rules — returning an empty list is a legitimate answer, and spam is penalised. Most teams will read "up to 20 actions" as a target rather than a ceiling. It is a ceiling.</p>
+  </div>
+</section>
+
+<section>
+  <p class="beat">07 — Trust</p>
+  <h2>The fastest way to lose is to make something up</h2>
+  <p>The brief lists what gets rejected quickest, and hallucinated facts are top of the list: a research citation that doesn't exist, a competitor who isn't real, a price nobody set.</p>
+  <p>The danger is subtle, because an AI writing to a dentist will <em>happily</em> invent a plausible-sounding journal reference. It reads beautifully. It is also a fabrication, and in the real world it would put a medical professional's reputation behind a claim nobody made.</p>
+  <p>So we put a gate between writing and sending. Every number, price, date, name and citation in a draft has to be traceable back to something magicpin actually told us. If a single claim cannot be traced, the message doesn't go out.</p>
+  <div class="card">
+    <h4>A subtle version of the same trap</h4>
+    <p>A merchant's offer might be real but <em>expired</em>. The judge is only shown their currently-active offers — so citing the expired one looks like an invention even though we read it from their own record. We only ever mention live offers.</p>
+    <p>The same applies to comparisons. One test merchant's click-through rate is well <em>above</em> the industry benchmark. A system that reflexively reaches for "your CTR is below average" would be stating something false about a real business.</p>
+  </div>
+</section>
+
+<section>
+  <p class="beat">08 — The edge</p>
+  <h2>Why we think this wins</h2>
+  <p>Three reasons, in order of how much they matter.</p>
+
+  <h3>One — most of the score isn't the writing</h3>
+  <p>Beyond scoring each message, magicpin awards a large bonus for noticing information that arrives <em>during</em> the test and using it, plus another for handling a real back-and-forth conversation, minus penalties for being slow or broken. Put together, roughly a third of the available score has nothing to do with copy. Almost everyone will spend all their effort on copy.</p>
+
+  <h3>Two — magicpin published their own weaknesses</h3>
+  <p>The brief is unusually candid about what production Vera does badly, and each one is a place to beat it directly:</p>
+  <ul>
+    <li><strong>Auto-replies waste its time.</strong> Between 40% and 70% of "merchant replies" are WhatsApp Business out-of-office messages, and Vera burns two or three turns before noticing. Detecting that instantly is a solved problem — nobody bothered.</li>
+    <li><strong>It talks past people who already said yes.</strong> A merchant says "I want to join" and Vera asks another qualifying question. Momentum lost.</li>
+    <li><strong>Discounts don't work on Indian merchants.</strong> "10% off" underperforms "Haircut @ ₹99". Service-plus-price, every time.</li>
+    <li><strong>Two of the eight persuasion levers barely fire at all</strong> — showing them what their neighbours are doing, and simply <em>asking them a question</em>. magicpin says both would unlock real engagement. We build both deliberately.</li>
+  </ul>
+
+  <h3>Three — we don't trust the practice test</h3>
+  <p>magicpin ships a scoring tool to test against. We read all of it. Out of the box it never actually runs the AI judge, and its behaviour checks report success no matter what happens. Teams will run it, see green, and ship.</p>
+  <p>We built our own, stricter version, plus a set of deliberately nasty test cases — the empty merchant, the expired offer, the customer who never consented to be contacted, the safety recall that must not be treated as a marketing moment. Part of that set is sealed and only opened a handful of times, so we can't accidentally tune the system to pass its own exam.</p>
+</section>
+
+<section>
+  <p class="beat">09 — Vocabulary</p>
+  <h2>Terms you may get asked about</h2>
+  <p>All of these come up in the brief. Short, product-side definitions.</p>
+
+  <dl>
+    <dt>Trigger</dt>
+    <dd>The event that justifies messaging someone right now — a festival approaching, their calls dropping, new research in their field. Every message must have one. It is the answer to "why today?"
+      <span class="said">Three quarters of them, in practice, name an event without supplying any details about it.</span></dd>
+
+    <dt>Suppression key</dt>
+    <dd>A label attached to each message describing its topic and time period, so we never raise the same subject twice. Think of it as a tag meaning "research, dentists, this week — already covered."
+      <span class="said">This is how you get cadence right without a human watching.</span></dd>
+
+    <dt>Grounding</dt>
+    <dd>Checking that every fact in a message traces back to real data before it is sent. The defence against a confident, fluent, entirely invented statistic.</dd>
+
+    <dt>Context injection</dt>
+    <dd>magicpin deliberately feeds in new information partway through the test — research that didn't exist when we built the system, merchant numbers that have shifted. They are checking whether we notice and use the new fact, or keep repeating the stale one.
+      <span class="said">This is a large scoring bonus that most teams will score zero on.</span></dd>
+
+    <dt>Send-as</dt>
+    <dd>Who the message appears to come from. Vera writes to merchants in her own name — but when writing to a merchant's <em>customer</em>, the message goes out from the merchant's number, in their voice. Getting this backwards is both a scoring error and, in the real world, a trust violation.</dd>
+
+    <dt>The replay test</dt>
+    <dd>For the top ten submissions only, magicpin role-plays three difficult merchants: one whose phone auto-replies endlessly, one who suddenly agrees and needs action not more questions, and one who is rude and then asks something unrelated. Five turns each, scored on conversational judgment alone.</dd>
+  </dl>
+</section>
+
+<section>
+  <p class="beat">10 — If you only remember one thing</p>
+  <h2>The sentence to lead with</h2>
+  <div class="pull">"The brief looks like a copywriting challenge. It's actually a decision problem — because the data is far thinner than the showcase example implies, and the highest-scoring behaviour in their own examples is the system arguing <em>against</em> its own instruction using data."</div>
+  <p>Everything else in this document supports that sentence. If the conversation goes anywhere unexpected, come back to it.</p>
+</section>
+
+<footer class="end">
+  Written from magicpin's challenge brief, testing brief, scoring tool and example pack. The percentages are measured from their own data generator, not estimated. A companion technical playbook covers the same system at the engineering level.
+</footer>
+
+</div>
+
+</body>
+</html>
