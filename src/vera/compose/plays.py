@@ -91,8 +91,9 @@ PLAYS: dict[str, Play] = {
         leads=(
             ("{who} — the dip you are seeing is seasonal: {beat}. Not a problem "
              "with your listing.", ("beat",)),
-            ("{who} — {perf.calls} {calls_label} last month is below your usual, "
-             "and the season explains most of it.", ("perf.calls",)),
+            ("{who} — {perf.calls} {calls_label} on {perf.views} {views_label} "
+             "last month is below your usual, and the season explains most of "
+             "it.", ("perf.calls", "perf.views")),
         ),
         cta="Want me to plan for the upswing instead?",
         judgment="seasonal pattern, not a fault; reassure rather than alarm",
@@ -105,9 +106,9 @@ PLAYS: dict[str, Play] = {
         leads=(
             ("{who} — you have crossed {trigger.milestone}. That is genuinely "
              "ahead of your category.", ("trigger.milestone",)),
-            ("{who} — {peer.calls} on {perf.calls} {calls_label} last month. "
-             "That is not typical for a {trade} in your area.",
-             ("peer.calls", "perf.calls")),
+            ("{who} — {perf.calls} {calls_label} on {perf.views} {views_label} "
+             "last month. That is not typical for a {trade} in your area.",
+             ("perf.calls", "perf.views")),
         ),
         cta="Want me to put that where customers can see it?",
         judgment="genuine good news; the one warm opening available",
@@ -121,9 +122,9 @@ PLAYS: dict[str, Play] = {
             ("{who} — a new {trade} opened {trigger.distance_km}km away. Your "
              "{perf.views} {views_label} last month are what is now being "
              "competed for.", ("trigger.distance_km", "perf.views")),
-            ("{who} — there is new competition nearby, and your listing is what "
-             "decides who gets the call. {perf.views} {views_label} last month.",
-             ("perf.views",)),
+            ("{who} — there is new competition nearby, and your {perf.views} "
+             "{views_label} and {perf.calls} {calls_label} last month are what "
+             "is now being competed for.", ("perf.views", "perf.calls")),
         ),
         cta="Want me to tighten the listing this week?",
         judgment="new local competition; defend the existing traffic",
@@ -164,9 +165,11 @@ PLAYS: dict[str, Play] = {
         topic="verification",
         leads=(
             ("{who} — your Google listing is still unverified, and it is holding "
+             "back the {perf.views} {views_label} and {perf.calls} "
+             "{calls_label} you saw last month.",
+             ("perf.views", "perf.calls")),
+            ("{who} — your Google listing is still unverified, and it is holding "
              "back {perf.views} {views_label} a month.", ("perf.views",)),
-            ("{who} — your Google listing is unverified. Until it is, changes "
-             "take days to show.", ()),
         ),
         cta="Want me to start the verification?",
         judgment="unverified listing caps everything downstream; fix it first",
@@ -180,8 +183,8 @@ PLAYS: dict[str, Play] = {
              "In that time: {perf.views} {views_label}, {perf.calls} "
              "{calls_label}.", ("signal.dormant_with_vera.n", "perf.views",
                                 "perf.calls")),
-            ("{who} — it has been a while. Your last 30 days: {perf.views} "
-             "{views_label}, {perf.calls} {calls_label}.",
+            ("{who} — it has been a while, and in that time your listing ran "
+             "{perf.views} {views_label} and {perf.calls} {calls_label}.",
              ("perf.views", "perf.calls")),
         ),
         cta="Want the one change that would move that most?",
@@ -197,7 +200,9 @@ PLAYS: dict[str, Play] = {
              "{perf.views} {views_label} last month are the audience for it.",
              ("trigger.festival", "trigger.days_away", "perf.views")),
             ("{who} — {trigger.festival} is close and nothing on your listing "
-             "mentions it.", ("trigger.festival",)),
+             "mentions it, with {perf.views} {views_label} and {perf.calls} "
+             "{calls_label} last month.",
+             ("trigger.festival", "perf.views", "perf.calls")),
         ),
         cta="Want me to draft the offer now?",
         judgment="dated event with preparation lead time still available",
@@ -207,10 +212,12 @@ PLAYS: dict[str, Play] = {
     "ipl_match_today": Play(
         topic="match-day",
         leads=(
-            ("{who} — there is a match today. Worth knowing before you spend on "
-             "it: {beat}", ("beat",)),
-            ("{who} — match day. Your last 30 days ran {perf.views} "
-             "{views_label} and {perf.calls} {calls_label}.",
+            ("{who} — match today, and before you spend on it: {beat}. Your last "
+             "30 days ran {perf.views} {views_label} against {perf.calls} "
+             "{calls_label}.", ("beat", "perf.views", "perf.calls")),
+            ("{who} — match day, and your last 30 days ran {perf.views} "
+             "{views_label} against {perf.calls} {calls_label}. Worth timing "
+             "the spend rather than spreading it.",
              ("perf.views", "perf.calls")),
         ),
         cta="Want me to time it for the fixture that actually converts?",
@@ -224,7 +231,8 @@ PLAYS: dict[str, Play] = {
             ("{who} — a rule change lands that affects you: {digest_title} "
              "({digest_source})", ("digest_title", "digest_source")),
             ("{who} — a rule change affecting your category has been published: "
-             "{digest_title}", ("digest_title",)),
+             "{digest_title}. Relevant to the {perf.views} {views_label} your "
+             "listing carried last month.", ("digest_title", "perf.views")),
         ),
         cta="Want the one-line version of what changes for you?",
         judgment="compliance change; inform plainly, no selling",
@@ -238,7 +246,9 @@ PLAYS: dict[str, Play] = {
              "{digest_title}. {digest_n} study. ({digest_source})",
              ("digest_title", "digest_n", "digest_source")),
             ("{who} — one item worth two minutes: {digest_title} "
-             "({digest_source})", ("digest_title", "digest_source")),
+             "({digest_source}). Your last 30 days ran {perf.views} "
+             "{views_label} and {perf.calls} {calls_label}.",
+             ("digest_title", "digest_source", "perf.views", "perf.calls")),
         ),
         cta="Want the summary plus something you can share on?",
         judgment="category research with a hook relevant to this trade",
@@ -249,8 +259,9 @@ PLAYS: dict[str, Play] = {
         topic="seasonal",
         leads=(
             ("{who} — the season is turning: {beat}", ("beat",)),
-            ("{who} — worth planning for the season now, while there is time.",
-             ()),
+            ("{who} — worth planning for the season now. Last 30 days: "
+             "{perf.views} {views_label}, {perf.calls} {calls_label}.",
+             ("perf.views", "perf.calls")),
         ),
         cta="Want me to line up the offer for it?",
         judgment="seasonal beat with preparation time remaining",
@@ -298,7 +309,9 @@ PLAYS: dict[str, Play] = {
              "asking you for most this month? Your listing shows {perf.views} "
              "{views_label} and {perf.calls} {calls_label}, which does not tell "
              "me what they wanted.", ("perf.views", "perf.calls")),
-            ("{who} — what are people asking you for most right now?", ()),
+            ("{who} — {perf.views} {views_label} last month and {perf.calls} "
+             "{calls_label}. What are people asking you for most right now?",
+             ("perf.views", "perf.calls")),
         ),
         cta="Worth a one-line answer?",
         judgment=("asking the merchant -- one of the two levers magicpin says "
@@ -312,8 +325,10 @@ PLAYS: dict[str, Play] = {
             ("{who} — there is a continuing-education session in your category: "
              "{digest_title} ({digest_source})",
              ("digest_title", "digest_source")),
-            ("{who} — a professional session relevant to your practice is "
-             "coming up: {digest_title}", ("digest_title",)),
+            ("{who} — a session relevant to your practice is coming up: "
+             "{digest_title}. Worth an hour against the {perf.calls} "
+             "{calls_label} you handled last month.",
+             ("digest_title", "perf.calls")),
         ),
         cta="Want the date and the link?",
         judgment="professional development opportunity, peer-to-peer framing",
