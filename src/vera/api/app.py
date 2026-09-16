@@ -253,6 +253,27 @@ async def push_context(body: S.ContextPush) -> dict:
 
 
 # --------------------------------------------------------------------------
+# POST /v1/teardown
+# --------------------------------------------------------------------------
+
+
+@app.post("/v1/teardown")
+async def teardown() -> dict:
+    """Wipe all state.
+
+    The testing brief says magicpin may call this at the end of a run and that
+    bots must not persist context afterwards. It doubles as the reset for a
+    service that was exercised before the real window: an equal-version push is
+    idempotent by contract, so leftover contexts at the same version would make
+    the judge's own pushes silent no-ops.
+    """
+    cleared = store.clear()
+    conversations.__init__()  # drop conversation state and the signature ledger
+    _sent_suppression_keys.clear()
+    return {"ok": True, "cleared_contexts": cleared, "stored_at": _now_iso()}
+
+
+# --------------------------------------------------------------------------
 # POST /v1/tick
 # --------------------------------------------------------------------------
 

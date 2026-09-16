@@ -222,6 +222,24 @@ class ContextStore:
         with self._lock:
             return [d for d in self._deltas if d.is_substantive]
 
+    # ---- teardown -------------------------------------------------------
+
+    def clear(self) -> int:
+        """Drop all state. Returns how many contexts were held.
+
+        Two callers. The testing brief says magicpin may POST /v1/teardown at
+        the end of a run and that bots must not retain context afterwards.
+        It is also the reset for a service that was exercised before the real
+        window -- stale contexts at the same version would make the judge's own
+        pushes no-ops, since an equal-version push is correctly idempotent.
+        """
+        with self._lock:
+            n = len(self._entries)
+            self._entries.clear()
+            self._deltas.clear()
+            self._tick = 0
+            return n
+
     # ---- clock ----------------------------------------------------------
 
     def advance_tick(self) -> int:
