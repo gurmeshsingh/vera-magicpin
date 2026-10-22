@@ -1,10 +1,4 @@
 # Render Blueprint.
-#
-# plan: free is what was chosen. Be aware of what it means here: a free web
-# service spins down after ~15 minutes idle and cold-starts in 50+ seconds.
-# The judge polls /v1/healthz every 60s and three consecutive failures ends the
-# run, so the service must be warm BEFORE the test window opens. Hit the URL a
-# few minutes beforehand. Upgrading to `starter` removes this entirely.
 services:
   - type: web
     name: vera-magicpin-gs

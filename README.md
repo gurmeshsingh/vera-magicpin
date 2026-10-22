@@ -1,72 +1,55 @@
-# Vera — magicpin AI Challenge
+# Vera bot: decide in code, write with care
 
-A stateful HTTP service that plays magicpin's merchant-AI assistant, judged live
-over a 60-simulated-minute window.
+A stateful HTTP bot for the magicpin AI Challenge, built on the Python standard library. An LLM is optional and only polishes wording.
 
-**No model runs in the request path.** The composer is deterministic, so the
-service needs no API key, cannot be rate-limited mid-test, and returns the same
-message for the same input every time.
+## Approach
+
+Every proactive message goes through the same five steps:
+
+1. **Facts.** The four contexts are normalised into checked, human-readable facts: "CTR 2.1% vs 3.0% peer average", "78 patients lapsed 180+ days", "your last Google post went up 22 days ago". Every number the bot can print is registered. That includes numbers it derives on purpose, such as "111 short of 1,000".
+2. **Decision.** One playbook per trigger family picks a single why-now, at most one supporting merchant fact, one action Vera will take, and one CTA as the last line.
+   - **Empty triggers:** 13 of the 30 canonical pairs have empty trigger payloads. For these, the why-now is built from merchant data instead of being invented.
+   - **Data that contradicts the trigger:** the bot says so. Example: a "perf_dip" whose numbers are up pivots to the merchant's real problem, a lapsed plan.
+   - **Unknown trigger kinds:** these are mapped to the closest family by keywords. A heatwave, for example, connects to the category's summer digest.
+3. **Guard.** Before anything is sent, four checks run: every number must be grounded, taboo words are blocked, raw internal codes like `ctr_below_peer` can't leak, and only one CTA is allowed, placed last. A failing sentence is removed rather than sent.
+4. **Optional polish.** An LLM rewrites for flow under strict rules. The result is accepted only if it keeps exactly the same numbers, quotes, salutation and CTA. Otherwise the deterministic draft ships.
+5. **Tick scheduling.** Candidates are ranked by urgency plus evidence strength, and each recipient gets at most one message per tick. Suppression keys stop repeats, and opted-out recipients are never messaged again. Polishing runs in parallel under an 8-second budget (the local judge simulator times out at 15 s), so a slow LLM never causes a timeout.
+
+Replies go through a rule-based router built on English and Hinglish lexicons:
+
+| Reply type | What the bot does |
+|---|---|
+| Auto-reply (detected per merchant, even across conversations) | Nudges once, then waits, then ends |
+| Commitment ("ok let's do it", "haan bhej do") | Delivers the artifact immediately, with no more questions |
+| Opt-out | Ends the conversation and suppresses the merchant permanently |
+| Abuse | Apologises once and offers STOP; ends if it repeats |
+| Off-topic (GST, loans) | Declines honestly and steers back |
+| Question | Answered from known facts, never guessed |
+
+The reply language follows the merchant's language turn by turn.
+
+## Tradeoffs
+
+- **Deterministic first.** Wording is a little more templated than a pure LLM writer, in exchange for zero hallucinated numbers, millisecond latency (tick p99 is about 20 ms) and identical output for identical input.
+- **In-memory state.** Pushed contexts are also snapshotted to disk, and the public base dataset is bundled as a silent fallback, so a restart mid-test still resolves merchants.
+- **Restraint.** The bot holds back a festival trigger flagged as irrelevant to the merchant's category, and any customer message that the customer's consent scope does not cover.
+
+## What would have helped most
+
+- Real slot calendars and service prices per merchant. Appointment triggers had no times, and many merchants had no offers.
+- Per-merchant reply history to learn each merchant's own auto-reply text before the first repeat.
+- Locality-level search demand, to turn category trends into "searches near you" facts.
+
+## Files
+
+`server.py` (HTTP) · `vera/` (store, facts, playbooks, compose, conversation, llm, bot) · `make_submission.py` (submission.jsonl and the `compose()` contract) · `conversation_handlers.py` (`respond()`) · `tests/` (adversarial tests) · `tools/judge_run.py` (end-to-end harness) · `HOW_IT_WORKS.md` (design walkthrough).
 
 ## Run
 
-    python -m venv .venv && ./.venv/bin/pip install -r requirements.txt
-    PYTHONPATH=src ./.venv/bin/uvicorn vera.api.app:app --host 0.0.0.0 --port 8080
+```
+python server.py                      # serves /v1/* on $PORT (default 8080)
+python -m unittest discover -s tests  # tests
+python make_submission.py             # regenerates submission.jsonl
+```
 
-Or `docker build -t vera-bot . && docker run -p 8080:8080 vera-bot`.
-
-## Test
-
-    ./.venv/bin/python scripts/smoke.py              # endpoints + contract
-    PYTHONPATH=src ./.venv/bin/python scripts/test_adaptation.py   # Phase 3 canaries
-    PYTHONPATH=src ./.venv/bin/python scripts/test_replay.py       # Phase 4 scenarios
-    ./scripts/preflight.sh https://your-host         # against a live URL
-
-## Deploy
-
-`render.yaml` and `fly.toml` are both configured. Two settings are not
-negotiable on either:
-
-* **The instance must not sleep.** Render's free plan and Fly's
-  `auto_stop_machines` both idle a service out. The judge polls `/v1/healthz`
-  every 60 seconds and three consecutive failures end the run.
-* **One instance, one worker.** State is in memory and the contract forbids
-  losing it mid-test. Two replicas means two half-filled context stores, each
-  reporting the wrong count to the warmup gate.
-
-## How it works
-
-    /v1/context   store it, diff it against the version we held, reopen the
-                  topics that gained new facts
-    /v1/tick      resolve triggers -> consent gate -> compose -> ground-check
-                  -> rank -> send the strongest few, or nothing
-    /v1/reply     classify the merchant's reply, then answer, wait, or exit
-    /v1/healthz   honest per-scope counts; the warmup gate checks them
-    /v1/metadata  identity
-
-Composition assembles a message from a **fact ledger** — every number carries
-the field path that proves it. A grounding verifier then checks the finished
-text against that ledger, and anything untraceable is withheld rather than sent.
-
-    src/vera/context/     versioned store, diffing, resolution, consent
-    src/vera/compose/     fact ledger, category voice, angles, engine
-    src/vera/grounding/   provenance verification
-    src/vera/conversation/ reply classification and composition
-    src/vera/api/         the five endpoints
-    harness/              our own judge, stricter than the shipped simulator
-    notes/                research: data dictionary, judge spec, design debate
-    docs/                 the playbook and the product brief
-
-## Things learned by measurement, not assumption
-
-* The briefs advertise a 30-second timeout. The harness enforces
-  **5s / 10s / 15s** per endpoint. Building to the documented figure times out
-  everywhere.
-* `ctr` is **not** `calls / views` — they disagree for 50 of 50 merchants.
-  Deriving one from the other hands the judge arithmetic that fails.
-* The shipped `judge_simulator.py` never calls the LLM judge under its default
-  setting, and its behavioural scenarios return success unconditionally.
-* Auto-reply detection must key on **merchant + message signature**, not
-  conversation id — the harness sends its four identical messages under four
-  different conversation ids.
-* The judge's own noise floor is SD 1.3 on an identical message. Differences
-  under 3 points mean nothing.
+Python 3.10+. Optional environment variables: `LLM_API_KEY` (enables polish), `TEAM_NAME`, `TEAM_MEMBERS`, `CONTACT_EMAIL`.
