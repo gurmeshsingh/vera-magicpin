@@ -1,4 +1,4 @@
-# How it works (plain language)
+# How it works
 
 ## The one idea
 
